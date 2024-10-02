@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd"
+        >
+
+<mapper namespace="com.example.demo.dao.dishDao">
+    <select id="selectByRestaurant" resultType="Dish" parameterType="String">
+        Select * From dish WHERE Restaurant=#{id}
+    </select>
+    <insert id="insertDish" parameterType="Dish">
+        insert into dish(Name, Restaurant, Price) VALUES (#{name}, #{restaurant}, #{price});
+    </insert>
+
+</mapper>
+
+
+
+<!--
+SELECT * FROM `411`.dish;
+DROP PROCEDURE sp_restaurant;
+DELIMITER //
+CREATE PROCEDURE sp_restaurant()
+BEGIN
+	Declare exit_loop BOOLEAN Default FALSE;
+	Declare varName varchar(255);
+	Declare varRestaurant varchar(255);
+    Declare varRate float;
+    Declare varStar float;
+	Declare cur Cursor For (
+		Select temp1.Name, business_id, stars, avgRate
+		From restaurant join
+		(select Name, Restaurant as business_id, avgRate
+				From dish natural join
+				(Select Name, Restaurant, avg(comment.rate) as avgRate
+				From have natural join comment
+				group by Name, Restaurant) as temp) as temp1 USING(business_id)
+    );
+
+    declare Continue Handler For Not FOUND SET exit_loop = TRUE;
+    Open cur;
+	cloop: LOOP
+		FETCH cur Into varName,varRestaurant, varStar,varRate;
+        If (exit_loop) THEN
+			LEAVE cloop;
+		END If;
+		IF varRate > (Select avg(Rate) From have natural join comment group by Name having varName = Name) AND (varStar <= 4.5) THEN
+			set varStar = varStar + 0.5;
+		END IF;
+		IF varRate < (Select avg(Rate) From have natural join comment group by Name having varName = Name) AND (varStar > 0) THEN
+			set varStar = varStar - 0.5;
+		END IF;
+        Update restaurant Set stars = varStar Where business_id = varRestaurant;
+    END LOOP cloop;
+
+	CLOSE cur;
+END //
+DELIMITER ;
+
+-->

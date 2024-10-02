@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd"
+        >
+<mapper namespace="com.example.demo.dao.cityDao">
+
+    <select id="cityAvg" resultType="city">
+        Select City as Name, avg(Price) as avgPrice
+        From restaurant r Join dish d on d.restaurant = r.business_id
+        Where state = "FL" and stars > 3
+        Group by City
+        Order by avg(Price) DESC
+        LIMIT 15
+    </select>
+
+    <select id="cityInRange" resultType="city">
+        Select City as Name, count(*) as avgPrice
+        From restaurant Natural Join
+        (Select business_id, avg(Price) as avgPrice
+        From restaurant r Join dish d on d.restaurant = r.business_id
+        Group by business_id) as temp
+        Where avgPrice > 20 or 10 > avgPrice
+        Group by City
+        Order by count(*) DESC
+        LIMIT 15
+    </select>
+
+</mapper>

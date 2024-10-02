@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd"
+        >
+
+<mapper namespace="com.example.demo.dao.commentDao">
+    <select id="selectByDish" resultType="comment" parameterType="String">
+        Select Text, Rate
+        From dish Natural Join have Natural Join Comment
+        Where Restaurant = #{Restaurant} AND name = #{name};
+    </select>
+    <insert id="insertComment" parameterType="Comment">
+        insert into comment(Text, Rate) VALUES(#{text}, #{rate})
+
+    </insert>
+    <select id="getcurrId" resultType="int">
+        Select max(CommentId)
+        From comment
+    </select>
+    <insert id="createRelation" parameterType="Have">
+        insert into have(Name, Restaurant, CommentId) VALUES(#{name}, #{restaurant}, #{id});
+    </insert>
+    <select id="storedProcedure" statementType="CALLABLE">
+        {call sp_restaurant()}
+    </select>
+</mapper>
+
+<!--
+delimiter |
+CREATE TRIGGER rate_check BEFORE insert ON comment
+       FOR EACH ROW
+       BEGIN
+           IF NEW.Rate < 0 THEN
+               SET NEW.Rate = 0;
+           ELSEIF NEW.Rate > 5 THEN
+               SET NEW.Rate = 5;
+           END IF;
+       END;
+|
+
+delimiter ;
+-->
